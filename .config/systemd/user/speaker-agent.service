@@ -1,0 +1,8 @@
+[Unit]
+Description=Bluetooth speaker agent
+
+[Service]
+ExecStart=python speaker-agent.py
+
+[Install]
+WantedBy=default.target
