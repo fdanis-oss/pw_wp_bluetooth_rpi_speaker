@@ -50,15 +50,7 @@ class Agent(dbus.service.Object):
         print("Cancel")
 
 
-if __name__ == '__main__':
-    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
-
-    bus = dbus.SystemBus()
-
-    agent = Agent(bus, AGENT_PATH)
-
-    mainloop = GLib.MainLoop()
-
+def start_speaker_agent():
     # By default Bluetooth adapter is not discoverable and there's
     # a 3 min timeout
     # Set it as always discoverable
@@ -79,4 +71,34 @@ if __name__ == '__main__':
 
     manager.RequestDefaultAgent(AGENT_PATH)
 
+
+def nameownerchanged_handler(*args, **kwargs):
+    if not args[1]:
+        print('org.bluez appeared')
+        start_speaker_agent()
+
+
+if __name__ == '__main__':
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+
+    bus = dbus.SystemBus()
+
+    agent = Agent(bus, AGENT_PATH)
+    agent.set_exit_on_release(False)
+
+    bus.add_signal_receiver(nameownerchanged_handler,
+                            signal_name='NameOwnerChanged',
+                            dbus_interface='org.freedesktop.DBus',
+                            path='/org/freedesktop/DBus',
+                            interface_keyword='dbus_interface',
+                            arg0='org.bluez')
+
+    dbus_service = bus.get_object('org.freedesktop.DBus',
+                                  '/org/freedesktop/DBus')
+    dbus_dbus = dbus.Interface(dbus_service, 'org.freedesktop.DBus')
+    if (dbus_dbus.NameHasOwner('org.bluez')):
+        print('org.bluez already started')
+        start_speaker_agent()
+
+    mainloop = GLib.MainLoop()
     mainloop.run()
