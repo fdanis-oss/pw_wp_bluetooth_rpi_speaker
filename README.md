@@ -11,17 +11,16 @@ Let's see how this is done.
 
 First, install [RaspberryPi OS Lite (64-bit)](https://www.raspberrypi.com/software/operating-systems/) to your SD card (assuming `/dev/sdb` is the SD card device on your PC/laptop):
 ```
-$  xzcat 2022-04-04-raspios-bullseye-arm64-lite.img.xz | sudo dd of=/dev/sdb bs=1M status=progress
+$  xzcat 2022-09-22-raspios-bullseye-arm64-lite.img.xz | sudo dd of=/dev/sdb bs=1M status=progress
 ```
 
-Connect the Raspberry Pi to a display & keyboard, boot it from this SD card, and complete the OS configuration.
+Connect the Raspberry Pi to a display & keyboard, boot it from this SD card, and complete the OS configuration. Select `Console Autologin` using the `raspi-config` utility.
 
-After the OS configuration is complete, install PipeWire and WirePlumber from the testing (Bookworm) repository:
+After the OS configuration is complete, install PipeWire and WirePlumber from the backport repository:
 ```
-$ echo 'APT::Default-Release "stable";' | sudo tee /etc/apt/apt.conf.d/99defaultrelease
-$ echo "deb http://ftp.de.debian.org/debian/ testing main contrib non-free" | sudo tee /etc/apt/sources.list.d/testing.list
+$ echo "deb http://deb.debian.org/debian bullseye-backports main contrib non-free" | sudo tee /etc/apt/sources.list.d/bullseye-backports.list
 $ sudo apt update
-$ sudo apt -t testing install pipewire wireplumber libspa-0.2-bluetooth
+$ sudo apt -t bullseye-backports install pipewire wireplumber libspa-0.2-bluetooth
 ```
 
 The RaspberryPi OS *Lite* version automatically logs in the user created during the setup and this will automatically start *PipeWire* and *WirePlumber*. This is all that's needed for setting up PipeWire.
