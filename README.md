@@ -3,7 +3,7 @@ Using a Raspberry Pi as a Bluetooth® speaker with PipeWire
 
 Do you have an old pair of PC speakers, or an old Hi-Fi, that you would like to convert into a pair of Bluetooth® speakers to play music from your phone? A Raspberry Pi can be easily used as an audio bridge between a Bluetooth® device and an analog speaker system, to make this possible. In this quick guide, I will show you how to set up the software on a Pi, using PipeWire, to achieve this.
 
-In my demonstration setup, I am using a Raspberry Pi 3, which embeds a Bluetooth® chipset, and I am connecting an analog speaker to the 3.5mm jack. For the software, I am using RaspberryPi OS Lite with a recent PipeWire version installed from the Debian testing (Bookworm) repositories, as the version included in RaspberryPi OS (which is based on Debian Bullseye) is too old to support this use case.
+In my demonstration setup, I am using a Raspberry Pi 3, which embeds a Bluetooth® chipset, and I am connecting an analog speaker to the 3.5mm jack. For the software, I am using RaspberryPi OS Lite with a recent PipeWire version installed from the Debian backports repositories, as the version included by default in RaspberryPi OS is too old to support this use case.
 
 PipeWire is able to output sound to the internal audio chipset without any special configuration. It provides Bluetooth® A2DP support with optional codecs (SBC-XQ, LDAC, aptX, aptX HD, aptX-LL, FastStream) out of the box. At the same time, WirePlumber automatically creates the connection between the A2DP source and the audio chipset when a remote device, like a phone or a laptop, connects. This makes the configuration very easy, as PipeWire will work out of the box. We will only need to set up BlueZ to make the system headless.
 
