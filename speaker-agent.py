@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
+import argparse
 import dbus
 import dbus.service
 import dbus.mainloop.glib
@@ -21,7 +22,38 @@ class Rejected(dbus.DBusException):
 
 
 class Agent(dbus.service.Object):
-    exit_on_release = True
+
+    def __init__(self, bus, path, single_connection):
+        self.exit_on_release = True
+        self.remote_device = None
+
+        dbus.service.Object.__init__(self, bus, path)
+
+        if single_connection:
+            bus.add_signal_receiver(self.signal_handler,
+                                    bus_name='org.bluez',
+                                    interface_keyword='org.freedesktop.DBus.Properties',
+                                    member_keyword='PropertiesChanged',
+                                    arg0='org.bluez.Device1',
+                                    path_keyword='path'
+                                    )
+
+    def signal_handler(self, *args, **kwargs):
+        path = kwargs['path']
+        connected = None
+        for i, arg in enumerate(args):
+            if type(arg) == dbus.Dictionary and "Connected" in arg:
+                connected = arg["Connected"]
+
+        if connected == None:
+            return
+
+        if not self.remote_device and connected == True:
+            self.remote_device = path
+            print("{} connected".format(path))
+        elif path == self.remote_device and connected == False:
+            self.remote_device = None
+            print("{} disconnected".format(path))
 
     def set_exit_on_release(self, exit_on_release):
         self.exit_on_release = exit_on_release
@@ -36,6 +68,10 @@ class Agent(dbus.service.Object):
     @dbus.service.method(AGENT_INTERFACE,
                          in_signature="os", out_signature="")
     def AuthorizeService(self, device, uuid):
+        if self.remote_device and self.remote_device != device:
+            print("%s try to connect while %s already connected" % (device, self.remote_device))
+            raise Rejected("Connection rejected by user")
+
         # Always authorize A2DP and AVRCP connection
         if uuid in [A2DP, AVRCP]:
             print("AuthorizeService (%s, %s)" % (device, uuid))
@@ -79,11 +115,15 @@ def nameownerchanged_handler(*args, **kwargs):
 
 
 if __name__ == '__main__':
+    options = argparse.ArgumentParser(description="BlueZ Speaker Agent")
+    options.add_argument("--single-connection", action='store_true', help="Allow only one connection at a time")
+    args = options.parse_args()
+
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
     bus = dbus.SystemBus()
 
-    agent = Agent(bus, AGENT_PATH)
+    agent = Agent(bus, AGENT_PATH, args.single_connection)
     agent.set_exit_on_release(False)
 
     bus.add_signal_receiver(nameownerchanged_handler,
