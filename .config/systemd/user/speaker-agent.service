@@ -2,6 +2,7 @@
 Description=Bluetooth speaker agent
 
 [Service]
+Environment=PYTHONUNBUFFERED=1
 ExecStart=python speaker-agent.py
 
 [Install]

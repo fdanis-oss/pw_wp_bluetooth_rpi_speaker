@@ -148,6 +148,7 @@ The systemd unit starts the speaker agent on boot as RaspberryPi OS Lite automat
 Description=Bluetooth speaker agent
 
 [Service]
+Environment=PYTHONUNBUFFERED=1
 ExecStart=python speaker-agent.py
 
 [Install]
