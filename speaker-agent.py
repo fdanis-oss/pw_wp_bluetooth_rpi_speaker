@@ -6,6 +6,7 @@ import dbus
 import dbus.service
 import dbus.mainloop.glib
 from gi.repository import GLib
+import subprocess
 
 BUS_NAME = 'org.bluez'
 AGENT_INTERFACE = 'org.bluez.Agent1'
@@ -66,6 +67,12 @@ class Agent(dbus.service.Object):
             mainloop.quit()
 
     @dbus.service.method(AGENT_INTERFACE,
+                         in_signature="o", out_signature="s")
+    def RequestPinCode(self, device):
+        print("RequestPinCode (%s)" % (device))
+        return "123456"
+
+    @dbus.service.method(AGENT_INTERFACE,
                          in_signature="os", out_signature="")
     def AuthorizeService(self, device, uuid):
         if self.remote_device and self.remote_device != device:
@@ -96,6 +103,13 @@ def start_speaker_agent():
     adapter.Set("org.bluez.Adapter1", "Discoverable", True)
 
     print("RPi speaker discoverable")
+
+    # Disable SSP mode to allow to request PIN code during pairing
+    sproc = subprocess.Popen("sudo hciconfig hci0 sspmode 0", bufsize = -1, shell = True)
+    sproc.communicate()
+    if sproc.returncode != 0:
+        print("SSP mode off command failed")
+        exit(1)
 
     # As the RPi speaker will not have any interface, create a pairing
     # agent with NoInputNoOutput capability
